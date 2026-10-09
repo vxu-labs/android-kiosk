@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="il.co.kiosk.tests">
+    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="35" />
+    <application android:label="Kiosk tests" />
+    <instrumentation android:name="il.co.kiosk.SmokeTests" android:targetPackage="il.co.kiosk" android:functionalTest="true" />
+    <instrumentation android:name="il.co.kiosk.OwnerTests" android:targetPackage="il.co.kiosk" android:functionalTest="true" />
+    <instrumentation android:name="il.co.kiosk.LocaleTests" android:targetPackage="il.co.kiosk" android:functionalTest="true" />
+    <instrumentation android:name="il.co.kiosk.UpgradeTests" android:targetPackage="il.co.kiosk" android:functionalTest="true" />
+</manifest>

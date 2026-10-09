@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const root = new URL('../', import.meta.url);
+const read = p => fs.readFileSync(new URL(p, root), 'utf8');
+const keys = p => [...read(p).matchAll(/<string name="([^"]+)"/g)].map(m => m[1]).sort();
+const en=keys('app/src/main/res/values/strings.xml'), he=keys('app/src/main/res/values-iw/strings.xml');
+assert.deepEqual(en, he, 'English/Hebrew resource coverage differs');
+assert.equal(new Set(en).size,en.length,'Duplicate English resource keys');
+const code=read('app/src/main/java/il/co/kiosk/MainActivity.java');
+for(const [,name] of code.matchAll(/R\.string\.(\w+)/g)) assert(en.includes(name),`Missing resource ${name}`);
+assert(!code.includes('preview_footer'),'The public footer must not be rendered');
+assert(!code.includes('LAYOUT_DIRECTION_RTL'),'Activity must follow selected locale, not hardcoded RTL');
+console.log(`PASS: ${en.length} matching English/Hebrew strings and referenced UI resources`);
