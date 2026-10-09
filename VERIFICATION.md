@@ -1,5 +1,17 @@
 # Verification — 2026-10-09
 
+## Version 1.2.0
+
+Single-tap quick actions, dark-default and persisted light/dark appearance, rounded native cards/dialogs and outlined PIN fields. All checks below ran on the disposable Android 11 tablet emulator; the only subsequent UI edit clarified two Hebrew PIN labels.
+
+- Same-key upgrade from the installed 1.1.0 APK preserved PIN, website, custom content and flags without granting an admin session.
+- 34 core security checks and all 103 English/Hebrew resource keys and UI references passed.
+- 19 Android smoke checks and 18 language/footer checks passed using the new tap-menu navigation.
+- 27 appearance/menu checks passed: two actions on single tap, native and website homepage refresh, no admin session from public actions, wrong/correct/cancelled PIN, visible editable input with normal/focus states, protected PIN window, dark default, saved light/dark changes, restart persistence, unchanged PIN/content, revoked admin after recreation, and Hebrew RTL menu.
+- 20 Device Owner checks passed, including opening the new menu while fully locked, refreshing without releasing lock, and accessing settings only through PIN. The test restored ADB and its success report was retrieved.
+- Visually inspected dark/light English PIN dialogs and settings, plus Hebrew dark menu, PIN and settings screenshots. Capture protection is disabled only temporarily by the test instrumentation.
+- The first appearance-test run incorrectly read a WebView URL on the instrumentation thread. Moving that read onto the main thread fixed the test; the application refresh behavior passed.
+
 ## Version 1.1.0
 
 The update adds persisted Hebrew/English resources and RTL/LTR layout, and moves lock status out of the public display into PIN-protected administration. Hebrew uses Android's legacy `values-iw` resource qualifier for compatibility.
@@ -38,6 +50,6 @@ The app is not capable of physically powering on a fully powered-off device. Dev
 .\scripts\test-emulator.ps1
 ```
 
-The smoke tests run before Device Owner is provisioned. After assigning ownership, the owner test verifies and then releases kiosk policies. APKs in `build/` are test-only and are never included in the installation bundle. Never install or run the test APK on a production tablet.
+The smoke, locale and appearance tests run before Device Owner is provisioned. After assigning ownership, the owner test verifies and then releases kiosk policies. Use a fresh disposable emulator for this sequence. APKs in `build/` are test-only and are never included in the installation bundle. Never install or run the test APK on a production tablet.
 
 The release signing key and password live only in ignored `.signing/`. Back up that folder privately for future APK updates. Downloaded toolchains, local activity history, signing material and build outputs are excluded from the public source snapshot.

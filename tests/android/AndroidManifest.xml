@@ -5,4 +5,5 @@
     <instrumentation android:name="il.co.kiosk.OwnerTests" android:targetPackage="il.co.kiosk" android:functionalTest="true" />
     <instrumentation android:name="il.co.kiosk.LocaleTests" android:targetPackage="il.co.kiosk" android:functionalTest="true" />
     <instrumentation android:name="il.co.kiosk.UpgradeTests" android:targetPackage="il.co.kiosk" android:functionalTest="true" />
+    <instrumentation android:name="il.co.kiosk.AppearanceTests" android:targetPackage="il.co.kiosk" android:functionalTest="true" />
 </manifest>

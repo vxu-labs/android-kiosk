@@ -6,6 +6,7 @@ A small, offline-first Android kiosk by **VXU LABS**, with a built-in home scree
 
 ## Features
 
+- Dark by default, with a saved Light option in PIN-protected settings. Rounded cards, clearly outlined PIN fields and a two-action tap menu. Appearance applies to the kiosk interface; websites keep their own design.
 - Hebrew and English UI, including RTL/LTR layout and localized dates. Choose a language on first setup or in PIN-protected settings, then save.
 - A basic home screen with your title, welcome message, clock and date, or a fullscreen HTTPS website.
 - A clean public display: no preview or management-status footer over the home screen or website. Accurate lock status remains in administration.
@@ -17,7 +18,7 @@ Android 9+ (API 28), architecture-independent Java. Originally built for a Samsu
 
 ## Install or update
 
-Download `Kiosk-1.1.0.apk` from Releases and install it. For an update, install **over the existing app**, using the same signing key. Do not uninstall: the PIN, website, text and settings are kept.
+Download `Kiosk-1.2.0.apk` from Releases and install it. For an update, install **over the existing app**, using the same signing key. Do not uninstall: the PIN, website, text and settings are kept.
 
 Installing the APK alone does **not** enable full Android locking. Selecting Kiosk as the Home app only makes the Home button return to it. Full lock requires Device Owner provisioning.
 
@@ -26,13 +27,13 @@ Installing the APK alone does **not** enable full Android locking. Selecting Kio
 3. Install and provision:
 
 ```sh
-adb install -r Kiosk-1.1.0.apk
+adb install -r Kiosk-1.2.0.apk
 adb shell dpm set-device-owner il.co.kiosk/.KioskAdminReceiver
 adb shell am start -n il.co.kiosk/.MainActivity
 ```
 
 4. Create your PIN, select the content and language, then save. When Device Owner is available, confirm **Save and enable kiosk**.
-5. Hold **⋮ in the top-right corner for two seconds**, then enter the PIN to manage the kiosk. Maintenance/Android exit requires another PIN check. Returning to Kiosk or rebooting reapplies the lock.
+5. Tap **⋮ in the top-right corner**, choose **Kiosk settings**, then enter the PIN to manage the kiosk. **Refresh homepage** is available without a PIN and returns to the saved home screen or website URL. Maintenance/Android exit requires another PIN check. Returning to Kiosk or rebooting reapplies the lock.
 
 Full locking disables USB debugging. Before updating through ADB, enter supervised maintenance and enable debugging again if needed. Keep the tablet with you during maintenance. The admin screen also offers permanent removal of device management before uninstalling.
 

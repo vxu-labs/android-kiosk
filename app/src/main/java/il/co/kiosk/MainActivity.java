@@ -7,6 +7,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.StateListDrawable;
+import android.content.res.ColorStateList;
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,7 +20,6 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.view.ActionMode;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -50,8 +52,8 @@ import android.widget.Toast;
 import java.io.ByteArrayInputStream;
 
 public final class MainActivity extends Activity {
-    private static final int INK = Color.rgb(18, 43, 56), TEAL = Color.rgb(8, 127, 140);
-    private static final int MUTED = Color.rgb(92, 112, 124), BG = Color.rgb(243, 246, 247);
+    private int INK, TEAL, MUTED, BG, SURFACE, INPUT, BORDER, DANGER;
+    private boolean dark;
     private static final long ADMIN_TIMEOUT = 180000;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Config config;
@@ -73,8 +75,18 @@ public final class MainActivity extends Activity {
     }
 
     @Override public void onCreate(Bundle state) {
-        super.onCreate(state);
         config = new Config(this);
+        dark = !"light".equals(config.text("appearance", "dark"));
+        setTheme(dark ? R.style.AppTheme : R.style.AppThemeLight);
+        INK = Color.parseColor(dark ? "#F5F5F7" : "#1D1D1F");
+        TEAL = Color.parseColor(dark ? "#0A84FF" : "#0071E3");
+        MUTED = Color.parseColor(dark ? "#A1A1AA" : "#63636B");
+        BG = Color.parseColor(dark ? "#09090B" : "#F5F5F7");
+        SURFACE = Color.parseColor(dark ? "#1C1C1E" : "#FFFFFF");
+        INPUT = Color.parseColor(dark ? "#2C2C2E" : "#F2F2F7");
+        BORDER = Color.parseColor(dark ? "#636366" : "#A1A1AA");
+        DANGER = Color.parseColor(dark ? "#FF6961" : "#B42318");
+        super.onCreate(state);
         displayedLanguage = Language.code(this);
         policy = new KioskPolicy(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_SECURE);
@@ -131,7 +143,7 @@ public final class MainActivity extends Activity {
     private void closeAdmin() {
         admin = false; adminUntil = 0; handler.removeCallbacks(adminExpiry);
         if (dialog != null) { dialog.dismiss(); dialog = null; }
-        if (!displayedLanguage.equals(Language.code(this))) { recreate(); return; }
+        if (!displayedLanguage.equals(Language.code(this)) || dark != !"light".equals(config.text("appearance", "dark"))) { recreate(); return; }
         showKiosk(); enforceLock();
     }
     private void destroyWeb() {
@@ -155,12 +167,13 @@ public final class MainActivity extends Activity {
         LinearLayout column = new LinearLayout(this); column.setOrientation(LinearLayout.VERTICAL); column.setPadding(dp(30), dp(38), dp(30), dp(40));
         FrameLayout.LayoutParams size = new FrameLayout.LayoutParams(Math.min(getResources().getDisplayMetrics().widthPixels, dp(740)), -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
         wrap.addView(column, size); scroll.addView(wrap); root.addView(scroll, new FrameLayout.LayoutParams(-1, -1));
-        column.addView(label(eyebrow, 14, TEAL)); column.addView(label(title, 32, INK));
+        TextView overline = label(eyebrow, 12, MUTED); overline.setLetterSpacing(0.12f); column.addView(overline); column.addView(label(title, 34, INK));
         TextView description = label(subtitle, 16, MUTED); description.setPadding(0, dp(8), 0, dp(22)); column.addView(description);
         return column;
     }
     private void showSetup() {
         LinearLayout column = form(getString(R.string.setup_eyebrow), getString(R.string.setup_title), getString(R.string.setup_intro));
+        column = section(column, getString(R.string.secure_setup));
         languageChoices(column, true);
         EditText pin = field(column, getString(R.string.new_pin), "", true);
         EditText again = field(column, getString(R.string.confirm_pin), "", true);
@@ -191,16 +204,26 @@ public final class MainActivity extends Activity {
             TextClock date = new TextClock(this); date.setFormat24Hour("EEEE, d MMMM yyyy"); date.setFormat12Hour("EEEE, d MMMM yyyy"); date.setTextSize(17); date.setTextColor(MUTED); date.setGravity(Gravity.CENTER); center.addView(date);
         }
     }
-    @SuppressLint("ClickableViewAccessibility") private void addAdminHandle() {
-        TextView handle = label("⋮", 30, INK); adminHandle = handle; handle.setGravity(Gravity.CENTER); handle.setContentDescription(getString(R.string.admin_handle)); handle.setBackground(shape(Color.rgb(226, 236, 237), 26));
+    private void addAdminHandle() {
+        TextView handle = label("⋮", 30, INK); adminHandle = handle; handle.setGravity(Gravity.CENTER); handle.setContentDescription(getString(R.string.admin_handle)); handle.setBackground(ripple(SURFACE, 26)); handle.setElevation(dp(4));
         FrameLayout.LayoutParams position = new FrameLayout.LayoutParams(dp(52), dp(52), Gravity.TOP | Gravity.RIGHT); position.setMargins(dp(16), dp(16), dp(16), 0); root.addView(handle, position);
-        Runnable open = () -> { handle.setPressed(false); requestPin(() -> { admin = true; extendAdmin(); showSettings(); }); };
-        handle.setOnTouchListener((v, e) -> {
-            if (e.getAction() == MotionEvent.ACTION_DOWN) { handler.postDelayed(open, 2000); v.setPressed(true); return true; }
-            if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL || (e.getAction() == MotionEvent.ACTION_MOVE && (e.getX() < 0 || e.getX() > v.getWidth() || e.getY() < 0 || e.getY() > v.getHeight()))) { handler.removeCallbacks(open); v.setPressed(false); return true; }
-            return true;
-        });
-        handle.setOnLongClickListener(v -> { handler.removeCallbacks(open); requestPin(() -> { admin = true; extendAdmin(); showSettings(); }); return true; });
+        handle.setFocusable(true); handle.setOnClickListener(v -> showQuickMenu());
+        handle.setOnLongClickListener(v -> { showQuickMenu(); return true; });
+    }
+    private void showQuickMenu() {
+        if (paused || admin || (dialog != null && dialog.isShowing())) return;
+        LinearLayout box = new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL); box.setPadding(dp(24), dp(8), dp(24), dp(24));
+        box.addView(button(getString(R.string.refresh_home), () -> {
+            dialog.dismiss(); dialog = null;
+            // Rebuild from saved configuration: reset website navigation and load its home URL.
+            showKiosk(); enforceLock();
+        }));
+        box.addView(secondaryButton(getString(R.string.kiosk_settings), () -> {
+            dialog.dismiss(); dialog = null;
+            requestPin(() -> { admin = true; extendAdmin(); showSettings(); });
+        }));
+        dialog = new AlertDialog.Builder(this).setTitle(getString(R.string.quick_actions)).setView(box).create();
+        presentDialog();
     }
     private void requestPin(Runnable success) {
         if (paused || (dialog != null && dialog.isShowing())) return;
@@ -214,29 +237,30 @@ public final class MainActivity extends Activity {
             if (config.authenticate(pin.getText().toString())) { dialog.dismiss(); dialog = null; success.run(); }
             else { pin.setText(""); long remaining = config.waitMillis(); error.setText(remaining > 0 ? getString(R.string.access_delayed) + ((remaining + 999) / 1000) + getString(R.string.seconds) : getString(R.string.wrong_pin)); }
         }));
-        dialog.setOnDismissListener(d -> immersive()); dialog.show();
-        if (dialog.getWindow() != null) dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        presentDialog();
     }
     private void showSettings() {
         if (!authorized()) return;
         LinearLayout column = form(getString(R.string.settings_eyebrow), getString(R.string.settings_title), getString(R.string.settings_intro));
         String status = policy.isOwner() ? (policy.isLocked() ? getString(R.string.status_locked) : getString(R.string.status_owner_ready)) : getString(R.string.status_no_owner);
-        TextView statusView = label(status, 16, policy.isOwner() ? TEAL : Color.rgb(150,72,25)); column.addView(statusView);
+        TextView statusView = label(status, 15, policy.isLocked() ? TEAL : MUTED); column.addView(statusView);
         if (!policy.isLocked()) column.addView(label(getString(R.string.status_explanation), 14, MUTED));
-        if (!lockError.isEmpty()) column.addView(label(lockError, 14, Color.RED));
-        RadioGroup languages = languageChoices(column, false);
-        column.addView(label(getString(R.string.mode_question), 22, INK));
+        if (!lockError.isEmpty()) column.addView(label(lockError, 14, DANGER));
+        LinearLayout preferences = section(column, getString(R.string.preferences));
+        RadioGroup languages = languageChoices(preferences, false);
+        RadioGroup appearances = appearanceChoices(preferences);
+        LinearLayout content = section(column, getString(R.string.mode_question));
         RadioGroup modes = new RadioGroup(this); modes.setOrientation(LinearLayout.HORIZONTAL);
         RadioButton home = new RadioButton(this); home.setId(View.generateViewId()); home.setText(getString(R.string.mode_home));
         RadioButton website = new RadioButton(this); website.setId(View.generateViewId()); website.setText(getString(R.string.mode_web));
-        modes.addView(home); modes.addView(website); modes.check("web".equals(config.text("mode", "home")) ? website.getId() : home.getId()); column.addView(modes);
-        EditText url = field(column, getString(R.string.website_url), config.text("url", ""), false); url.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI); url.setTextDirection(View.TEXT_DIRECTION_LTR);
-        CheckBox sameHost = check(column, getString(R.string.same_host), config.flag("same_host", true));
-        column.addView(label(getString(R.string.web_limits), 13, MUTED));
-        EditText title = field(column, getString(R.string.home_title), config.text("title", getString(R.string.default_title)), false);
-        EditText message = field(column, getString(R.string.home_message), config.text("message", getString(R.string.default_message)), false);
-        CheckBox clock = check(column, getString(R.string.show_clock), config.flag("clock", true));
-        TextView error = label("", 14, Color.rgb(170,45,45)); column.addView(error);
+        modes.addView(home); modes.addView(website); modes.check("web".equals(config.text("mode", "home")) ? website.getId() : home.getId()); styleChoices(modes); content.addView(modes);
+        EditText url = field(content, getString(R.string.website_url), config.text("url", ""), false); url.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI); url.setTextDirection(View.TEXT_DIRECTION_LTR);
+        CheckBox sameHost = check(content, getString(R.string.same_host), config.flag("same_host", true));
+        content.addView(label(getString(R.string.web_limits), 13, MUTED));
+        EditText title = field(content, getString(R.string.home_title), config.text("title", getString(R.string.default_title)), false);
+        EditText message = field(content, getString(R.string.home_message), config.text("message", getString(R.string.default_message)), false);
+        CheckBox clock = check(content, getString(R.string.show_clock), config.flag("clock", true));
+        TextView error = label("", 14, DANGER); column.addView(error);
         Runnable save = () -> {
             if (!authorized()) return;
             String entered = url.getText().toString().trim();
@@ -244,6 +268,7 @@ public final class MainActivity extends Activity {
             if (useWeb && !UrlPolicy.valid(entered)) { error.setText(getString(R.string.invalid_url)); return; }
             boolean saved = config.prefs.edit().putString("mode", useWeb ? "web" : "home").putString("url", entered)
                 .putString("language", (String) languages.findViewById(languages.getCheckedRadioButtonId()).getTag())
+                .putString("appearance", (String) appearances.findViewById(appearances.getCheckedRadioButtonId()).getTag())
                 .putString("title", title.getText().toString().trim()).putString("message", message.getText().toString().trim())
                 .putBoolean("same_host", sameHost.isChecked()).putBoolean("clock", clock.isChecked()).commit();
             if (!saved) { error.setText(getString(R.string.save_failed)); return; }
@@ -254,27 +279,27 @@ public final class MainActivity extends Activity {
                     if (!authorized()) return;
                     if (!config.prefs.edit().putBoolean("enabled", true).commit()) { toast(getString(R.string.cannot_save)); return; }
                     enforceLock(); closeAdmin();
-                }).create(); dialog.show();
+                }).create(); presentDialog();
         };
         column.addView(button(policy.isOwner() ? getString(R.string.save_enable) : getString(R.string.save_preview), save));
-        column.addView(button(getString(R.string.return_kiosk), this::closeAdmin));
-        column.addView(label(getString(R.string.admin_only), 22, INK));
-        column.addView(button(getString(R.string.change_pin), () -> { if (authorized()) changePin(); }));
-        column.addView(button(getString(R.string.setup_help), () -> {
+        column.addView(secondaryButton(getString(R.string.return_kiosk), this::closeAdmin));
+        LinearLayout maintenance = section(column, getString(R.string.admin_only));
+        maintenance.addView(secondaryButton(getString(R.string.change_pin), () -> { if (authorized()) changePin(); }));
+        maintenance.addView(secondaryButton(getString(R.string.setup_help), () -> {
             if (!authorized()) return;
             dialog = new AlertDialog.Builder(this).setTitle(getString(R.string.full_lock_title))
                 .setMessage(getString(R.string.full_lock_help))
-                .setPositiveButton(getString(R.string.understood), null).create(); dialog.show();
+                .setPositiveButton(getString(R.string.understood), null).create(); presentDialog();
         }));
-        column.addView(button(getString(R.string.android_settings), () -> {
+        maintenance.addView(secondaryButton(getString(R.string.android_settings), () -> {
             if (!authorized()) return;
             requestPin(() -> openAndroid(false));
         }));
-        column.addView(button(getString(R.string.exit_android), () -> {
+        maintenance.addView(secondaryButton(getString(R.string.exit_android), () -> {
             if (!authorized()) return;
             requestPin(() -> openAndroid(true));
         }));
-        column.addView(button(getString(R.string.clear_site), () -> {
+        maintenance.addView(secondaryButton(getString(R.string.clear_site), () -> {
             if (!authorized()) return;
             dialog = new AlertDialog.Builder(this).setTitle(getString(R.string.clear_site_title)).setMessage(getString(R.string.clear_site_message))
                 .setNegativeButton(getString(R.string.cancel), null).setPositiveButton(getString(R.string.clear), (d,w) -> {
@@ -282,9 +307,9 @@ public final class MainActivity extends Activity {
                     CookieManager.getInstance().removeAllCookies(null); CookieManager.getInstance().flush();
                     android.webkit.WebStorage.getInstance().deleteAllData();
                     WebView cleaner = new WebView(this); cleaner.clearCache(true); cleaner.clearHistory(); cleaner.destroy(); toast(getString(R.string.site_cleared));
-                }).create(); dialog.show();
+                }).create(); presentDialog();
         }));
-        if (policy.isOwner()) column.addView(button(getString(R.string.remove_management), () -> {
+        if (policy.isOwner()) maintenance.addView(secondaryButton(getString(R.string.remove_management), () -> {
             if (!authorized()) return;
             requestPin(() -> {
                 admin = true; extendAdmin();
@@ -296,7 +321,7 @@ public final class MainActivity extends Activity {
                             policy.release(this, true); policy.dpm.clearDeviceOwnerApp(getPackageName());
                             config.prefs.edit().putBoolean("enabled", false).commit(); closeAdmin(); toast(getString(R.string.management_removed));
                         } catch (RuntimeException e) { toast(getString(R.string.remove_failed) + e.getMessage()); enforceLock(); }
-                    }).create(); dialog.show();
+                    }).create(); presentDialog();
             });
         }));
         column.addView(label(getString(R.string.about), 13, MUTED));
@@ -312,7 +337,7 @@ public final class MainActivity extends Activity {
     private void changePin() {
         LinearLayout box = new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL); box.setPadding(dp(24), dp(8), dp(24), dp(8)); box.setLayoutDirection(getResources().getConfiguration().getLayoutDirection());
         EditText current = field(box, getString(R.string.current_pin), "", true), next = field(box, getString(R.string.new_pin_hint), "", true), confirm = field(box, getString(R.string.new_pin_confirm), "", true);
-        TextView error = label("", 14, Color.RED); box.addView(error);
+        TextView error = label("", 14, DANGER); box.addView(error);
         dialog = new AlertDialog.Builder(this).setTitle(getString(R.string.change_pin)).setView(box).setNegativeButton(getString(R.string.cancel), null).setPositiveButton(getString(R.string.save), null).create();
         dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             if (!authorized()) return;
@@ -320,7 +345,7 @@ public final class MainActivity extends Activity {
             if (!config.authenticate(current.getText().toString())) { error.setText(getString(R.string.current_pin_invalid)); return; }
             try { config.savePin(next.getText().toString()); dialog.dismiss(); dialog = null; toast(getString(R.string.pin_updated)); }
             catch (RuntimeException e) { error.setText(getString(R.string.pin_update_failed)); }
-        })); dialog.show(); if (dialog.getWindow() != null) dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        })); presentDialog();
     }
     @SuppressLint("SetJavaScriptEnabled") private void showWebsite() {
         web = new WebView(this); web.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
@@ -382,7 +407,46 @@ public final class MainActivity extends Activity {
     }
     private TextView label(String text, float size, int color) {
         TextView view = new TextView(this); view.setText(text); view.setTextSize(size); view.setTextColor(color); view.setPadding(0, dp(6), 0, dp(6));
-        view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG); if (size >= 22) view.setTypeface(Typeface.DEFAULT, Typeface.BOLD); return view;
+        view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG); if (size >= 22) view.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL)); return view;
+    }
+    private LinearLayout section(LinearLayout parent, String title) {
+        TextView heading = label(title, 18, INK); heading.setPadding(dp(4), dp(24), dp(4), dp(12)); parent.addView(heading);
+        LinearLayout card = new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL); card.setPadding(dp(22), dp(18), dp(22), dp(22)); card.setBackground(shape(SURFACE, 24));
+        parent.addView(card, new LinearLayout.LayoutParams(-1, -2)); return card;
+    }
+    private void styleChoices(RadioGroup group) {
+        group.setPadding(0, dp(4), 0, dp(8));
+        // Segments wrap their text on narrow screens and remain comfortable touch targets.
+        for (int i = 0; i < group.getChildCount(); i++) {
+            RadioButton option = (RadioButton)group.getChildAt(i);
+            option.setButtonDrawable((android.graphics.drawable.Drawable)null); option.setGravity(Gravity.CENTER); option.setTextSize(15); option.setMinHeight(dp(52)); option.setPadding(dp(8), dp(12), dp(8), dp(12));
+            option.setTextColor(new ColorStateList(new int[][]{{android.R.attr.state_checked},{}}, new int[]{Color.WHITE,INK}));
+            StateListDrawable background = new StateListDrawable(); background.addState(new int[]{android.R.attr.state_checked}, shape(Color.rgb(0, 113, 227), 12)); background.addState(new int[]{}, shape(INPUT, 12)); option.setBackground(background);
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, -2, 1); p.setMarginEnd(dp(4)); p.setMarginStart(dp(4)); option.setLayoutParams(p);
+        }
+    }
+    private RadioGroup appearanceChoices(LinearLayout parent) {
+        parent.addView(label(getString(R.string.appearance), 18, INK));
+        RadioGroup group = new RadioGroup(this); group.setOrientation(LinearLayout.HORIZONTAL);
+        for (String value : new String[]{"dark", "light"}) {
+            RadioButton option = new RadioButton(this); option.setId(View.generateViewId()); option.setTag(value);
+            option.setText(getString("dark".equals(value) ? R.string.theme_dark : R.string.theme_light)); group.addView(option);
+            if (value.equals(config.text("appearance", "dark"))) group.check(option.getId());
+        }
+        styleChoices(group); parent.addView(group); parent.addView(label(getString(R.string.appearance_hint), 13, MUTED)); return group;
+    }
+    private void presentDialog() {
+        dialog.setOnDismissListener(d -> immersive()); dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            dialog.getWindow().setBackgroundDrawable(shape(SURFACE, 28));
+            dialog.getWindow().setLayout(Math.min(getResources().getDisplayMetrics().widthPixels - dp(32), dp(460)), -2);
+            dialog.getWindow().getDecorView().setLayoutDirection(getResources().getConfiguration().getLayoutDirection());
+            dialog.getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility());
+        }
+        for (int id : new int[]{AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE}) {
+            Button action = dialog.getButton(id); if (action != null) { action.setAllCaps(false); action.setTextColor(TEAL); action.setMinHeight(dp(48)); }
+        }
     }
     private RadioGroup languageChoices(LinearLayout parent, boolean initialSetup) {
         parent.addView(label("Language / שפה", 18, INK));
@@ -393,7 +457,7 @@ public final class MainActivity extends Activity {
             option.setTextColor(INK); group.addView(option);
             if (code.equals(Language.code(this))) group.check(option.getId());
         }
-        parent.addView(group);
+        styleChoices(group); parent.addView(group);
         if (initialSetup) group.setOnCheckedChangeListener((g, id) -> {
             if (config.hasPin()) return;
             String code = (String)g.findViewById(id).getTag();
@@ -404,17 +468,25 @@ public final class MainActivity extends Activity {
         return group;
     }
     private EditText field(LinearLayout parent, String caption, String value, boolean pin) {
-        parent.addView(label(caption, 14, MUTED)); EditText field = new EditText(this); field.setSingleLine(true); field.setTextSize(18); field.setTextColor(INK); field.setPadding(dp(14), dp(12), dp(14), dp(12)); field.setBackground(shape(Color.WHITE, 10));
+        TextView captionView = label(caption, 14, MUTED); parent.addView(captionView);
+        EditText field = new EditText(this); field.setId(View.generateViewId()); captionView.setLabelFor(field.getId()); field.setSingleLine(true); field.setTextSize(18); field.setTextColor(INK); field.setHintTextColor(MUTED); field.setPadding(dp(16), dp(16), dp(16), dp(16)); field.setMinHeight(dp(58));
+        GradientDrawable normal = shape(INPUT, 14); normal.setStroke(dp(1), BORDER);
+        GradientDrawable focused = shape(INPUT, 14); focused.setStroke(dp(2), TEAL);
+        StateListDrawable states = new StateListDrawable(); states.addState(new int[]{android.R.attr.state_focused}, focused); states.addState(new int[]{}, normal); field.setBackground(states);
         field.setInputType(pin ? InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD : InputType.TYPE_CLASS_TEXT);
+        field.setHint(pin ? getString(R.string.pin_placeholder) : caption);
+        if (pin) { field.setTextDirection(View.TEXT_DIRECTION_LTR); field.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL)); field.setLetterSpacing(0.12f); }
         field.setFilters(new InputFilter[]{new InputFilter.LengthFilter(pin ? 12 : 4096)}); field.setText(value);
         field.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS); field.setSaveEnabled(false);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2); p.bottomMargin = dp(10); parent.addView(field, p); return field;
     }
     private CheckBox check(LinearLayout parent, String text, boolean checked) { CheckBox c = new CheckBox(this); c.setText(text); c.setTextColor(INK); c.setTextSize(15); c.setChecked(checked); parent.addView(c); return c; }
     private Button button(String text, Runnable action) {
-        Button b = new Button(this); b.setText(text); b.setTextSize(16); b.setAllCaps(false); b.setTextColor(Color.WHITE); b.setBackground(shape(TEAL, 12)); b.setPadding(dp(16), dp(10), dp(16), dp(10)); b.setMinHeight(dp(52));
+        Button b = new Button(this); b.setText(text); b.setTextSize(16); b.setAllCaps(false); b.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL)); b.setTextColor(Color.WHITE); b.setBackground(ripple(Color.rgb(0, 113, 227), 14)); b.setStateListAnimator(null); b.setPadding(dp(16), dp(14), dp(16), dp(14)); b.setMinHeight(dp(54));
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2); p.topMargin = dp(12); p.bottomMargin = dp(4); b.setLayoutParams(p); b.setOnClickListener(v -> action.run()); return b;
     }
+    private Button secondaryButton(String text, Runnable action) { Button b = button(text, action); b.setTextColor(INK); b.setBackground(ripple(INPUT, 14)); return b; }
+    private RippleDrawable ripple(int color, int radius) { return new RippleDrawable(ColorStateList.valueOf(dark ? 0x33FFFFFF : 0x22000000), shape(color, radius), shape(Color.WHITE, radius)); }
     private GradientDrawable shape(int color, int radius) { GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(radius)); return d; }
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
     private void toast(String message) { Toast.makeText(this, message, Toast.LENGTH_LONG).show(); }

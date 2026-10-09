@@ -17,7 +17,7 @@
     <string name="welcome">"Welcome"</string>
     <string name="default_title">"My kiosk"</string>
     <string name="default_message">"We are glad to see you here"</string>
-    <string name="admin_handle">"Admin access — press and hold for two seconds"</string>
+    <string name="admin_handle">Open quick actions</string>
     <string name="admin_pin">"Admin PIN"</string>
     <string name="pin_intro">"Your personal PIN protects settings and exit."</string>
     <string name="admin_login">"Admin access"</string>
@@ -46,7 +46,7 @@
     <string name="save_failed">"Could not save. Try again."</string>
     <string name="preview_saved">"Display saved. Full lock requires Device Owner."</string>
     <string name="enable_title">"Enable kiosk lock"</string>
-    <string name="enable_message">"The tablet will always open the kiosk. Home, Recents, notifications and USB debugging will be blocked. For settings, hold ⋮ for two seconds and enter your PIN. Make sure you have saved your PIN."</string>
+    <string name="enable_message">"The tablet will always open the kiosk. Home, Recents, notifications and USB debugging will be blocked. For settings, tap ⋮, choose Kiosk settings and enter your PIN. Make sure you have saved your PIN."</string>
     <string name="enable">"Enable"</string>
     <string name="cannot_save">"Unable to save"</string>
     <string name="save_enable">"Save and enable kiosk"</string>
@@ -56,7 +56,7 @@
     <string name="change_pin">"Change PIN"</string>
     <string name="setup_help">"Setup and management guide"</string>
     <string name="full_lock_title">"Enable full Android lock"</string>
-    <string name="full_lock_help">"Install the APK on a device without accounts or another device manager. On a computer with ADB:\n\nadb shell dpm set-device-owner il.co.kiosk/.KioskAdminReceiver\n\nThen reopen the app, enter your PIN and save settings to enable the lock. USB debugging is disabled while locked.\n\nHold ⋮ in the top-right corner, then enter your PIN.\n\nAndroid access is for supervised maintenance. Returning to the kiosk or rebooting locks it again.\n\nThere is no recovery PIN. A recovery reset can erase all data. The app starts after power-on; it cannot power on a switched-off device."</string>
+    <string name="full_lock_help">"Install the APK on a device without accounts or another device manager. On a computer with ADB:\n\nadb shell dpm set-device-owner il.co.kiosk/.KioskAdminReceiver\n\nThen reopen the app, enter your PIN and save settings to enable the lock. USB debugging is disabled while locked.\n\nTap ⋮ in the top-right corner, choose Kiosk settings, then enter your PIN.\n\nAndroid access is for supervised maintenance. Returning to the kiosk or rebooting locks it again.\n\nThere is no recovery PIN. A recovery reset can erase all data. The app starts after power-on; it cannot power on a switched-off device."</string>
     <string name="understood">"Got it"</string>
     <string name="android_settings">"Open Android settings for maintenance"</string>
     <string name="exit_android">"Temporarily exit to Android"</string>
@@ -71,7 +71,7 @@
     <string name="remove">"Remove management"</string>
     <string name="management_removed">"Device management removed"</string>
     <string name="remove_failed">"Could not remove management: "</string>
-    <string name="about">"Kiosk 1.1.0 · No ads or tracking service"</string>
+    <string name="about">"Kiosk 1.2.0 · No ads or tracking service"</string>
     <string name="android_open_failed">"Could not open Android: "</string>
     <string name="current_pin">"Current PIN"</string>
     <string name="new_pin_hint">"New PIN (6–12 digits)"</string>
@@ -92,4 +92,14 @@
     <string name="site_unavailable">"The website is unavailable"</string>
     <string name="retry_delay">" Trying again in 15 seconds."</string>
     <string name="retry">"Try again"</string>
+    <string name="refresh_home">Refresh homepage</string>
+    <string name="kiosk_settings">Kiosk settings</string>
+    <string name="quick_actions">Quick actions</string>
+    <string name="preferences">Preferences</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="appearance_hint">Applies when you save. Website content keeps its own design.</string>
+    <string name="pin_placeholder">Enter 6–12 digits</string>
+    <string name="secure_setup">Secure your kiosk</string>
 </resources>

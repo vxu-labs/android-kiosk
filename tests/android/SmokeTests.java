@@ -86,7 +86,7 @@ public final class SmokeTests extends Instrumentation {
     private List<EditText> fields() { List<EditText> values = new ArrayList<>(); collect(root(),values); return values; }
     private void collect(View v, List<EditText> list) { if (v instanceof EditText) list.add((EditText)v); if (v instanceof ViewGroup) for (int i=0;i<((ViewGroup)v).getChildCount();i++) collect(((ViewGroup)v).getChildAt(i),list); }
     private WebView findWeb(View v) { if (v instanceof WebView) return (WebView)v; if (v instanceof ViewGroup) for (int i=0;i<((ViewGroup)v).getChildCount();i++) { WebView w=findWeb(((ViewGroup)v).getChildAt(i)); if(w!=null)return w; } return null; }
-    private void openPin() { main(() -> find(root(), "⋮").performLongClick()); }
+    private void openPin() { main(() -> find(root(), "⋮").performClick()); main(() -> find(dialog().getWindow().getDecorView(), activity.getString(R.string.kiosk_settings)).performClick()); }
     private android.app.AlertDialog dialog() {
         try { java.lang.reflect.Field field=MainActivity.class.getDeclaredField("dialog"); field.setAccessible(true); return (android.app.AlertDialog)field.get(activity); } catch(Exception e) { throw new RuntimeException(e); }
     }

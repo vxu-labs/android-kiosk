@@ -39,10 +39,17 @@ public final class OwnerTests extends Instrumentation {
             check("il.co.kiosk".equals(getTargetContext().getPackageManager().resolveActivity(home,0).activityInfo.packageName), "persistent home points at kiosk");
             final Activity running = activity;
             final boolean[] pinChecks = new boolean[2];
+            runOnMainSync(() -> findText(running.getWindow().getDecorView(), "⋮").performClick());
+            waitForIdleSync();
+            check(currentDialog(running).isShowing(), "single tap opens menu while fully locked");
+            runOnMainSync(() -> findText(currentDialog(running).getWindow().getDecorView(), running.getString(R.string.refresh_home)).performClick());
+            waitForIdleSync();
+            check(getTargetContext().getSystemService(ActivityManager.class).getLockTaskModeState() == ActivityManager.LOCK_TASK_MODE_LOCKED, "public refresh preserves full lock");
             runOnMainSync(() -> {
                 try {
                     java.lang.reflect.Field handle = MainActivity.class.getDeclaredField("adminHandle"); handle.setAccessible(true);
-                    ((android.view.View)handle.get(running)).performLongClick();
+                    ((android.view.View)handle.get(running)).performClick();
+                    findText(currentDialog(running).getWindow().getDecorView(), running.getString(R.string.kiosk_settings)).performClick();
                     java.lang.reflect.Field dialogField = MainActivity.class.getDeclaredField("dialog"); dialogField.setAccessible(true);
                     android.app.AlertDialog dialog = (android.app.AlertDialog)dialogField.get(running);
                     pinChecks[0] = dialog != null && dialog.isShowing();
@@ -79,6 +86,13 @@ public final class OwnerTests extends Instrumentation {
         result.putString("stream",report); finish(report.startsWith("PASS") ? Activity.RESULT_OK : Activity.RESULT_CANCELED,result);
     }
     private void check(boolean value,String name) { if(!value) throw new AssertionError(name); checks++; }
+    private android.app.AlertDialog currentDialog(Activity a) {
+        try { java.lang.reflect.Field f=MainActivity.class.getDeclaredField("dialog"); f.setAccessible(true); return (android.app.AlertDialog)f.get(a); } catch(Exception e) { throw new RuntimeException(e); }
+    }
+    private android.view.View findText(android.view.View v, String text) {
+        if(v instanceof android.widget.TextView && text.equals(((android.widget.TextView)v).getText().toString()))return v;
+        if(v instanceof android.view.ViewGroup)for(int i=0;i<((android.view.ViewGroup)v).getChildCount();i++){android.view.View found=findText(((android.view.ViewGroup)v).getChildAt(i),text);if(found!=null)return found;}return null;
+    }
     private android.widget.EditText findInput(android.view.View view) {
         if(view instanceof android.widget.EditText) return (android.widget.EditText)view;
         if(view instanceof android.view.ViewGroup) for(int i=0;i<((android.view.ViewGroup)view).getChildCount();i++) { android.widget.EditText input=findInput(((android.view.ViewGroup)view).getChildAt(i)); if(input!=null)return input; }

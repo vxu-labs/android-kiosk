@@ -74,7 +74,8 @@ public final class LocaleTests extends Instrumentation {
     private List<EditText> inputs() { List<EditText> list=new ArrayList<>(); collect(root(),list);return list; }
     private void collect(View v,List<EditText> list) { if(v instanceof EditText)list.add((EditText)v);if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++)collect(((ViewGroup)v).getChildAt(i),list); }
     private void openAdmin() {
-        main(() -> find(root(),"⋮").performLongClick());
+        main(() -> find(root(), "⋮").performClick());
+        main(() -> { AlertDialog menu=(AlertDialog)field("dialog"); find(menu.getWindow().getDecorView(), activity.getString(R.string.kiosk_settings)).performClick(); });
         main(() -> { AlertDialog d=(AlertDialog)field("dialog"); List<EditText> list=new ArrayList<>();collect(d.getWindow().getDecorView(),list);list.get(0).setText("012345");d.getButton(AlertDialog.BUTTON_POSITIVE).performClick(); });
     }
     private void screenshot(String name) throws Exception {

@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-/** Seed on 1.0.0, install 1.1.0 with -r, then verify. Disposable emulator only. */
+/** Seed on 1.1.0, install 1.2.0 with -r, then verify. Disposable emulator only. */
 public final class UpgradeTests extends Instrumentation {
     private boolean seed;
     @Override public void onCreate(Bundle args) { super.onCreate(args); seed=args!=null && "true".equals(args.getString("seed"));start(); }
@@ -18,9 +18,9 @@ public final class UpgradeTests extends Instrumentation {
                 prefs.edit().clear().putString("pin",PinCrypto.create("019283")).putString("mode","web")
                     .putString("url","https://example.com/upgrade").putString("title","Existing shop").putString("message","Existing message")
                     .putBoolean("enabled",true).putBoolean("clock",false).putBoolean("same_host",false).commit();
-                result.putString("stream","PASS: seeded 1.0.0 configuration\n");
+                result.putString("stream","PASS: seeded prior-version configuration\n");
             } else {
-                if(getTargetContext().getPackageManager().getPackageInfo("il.co.kiosk",0).getLongVersionCode()!=2)throw new AssertionError("wrong installed version");
+                if(getTargetContext().getPackageManager().getPackageInfo("il.co.kiosk",0).getLongVersionCode()!=3)throw new AssertionError("wrong installed version");
                 if(!PinCrypto.matches("019283",prefs.getString("pin",null)))throw new AssertionError("PIN changed");
                 if(!prefs.getString("url","").equals("https://example.com/upgrade") || !prefs.getString("mode","").equals("web"))throw new AssertionError("website changed");
                 if(!prefs.getString("title","").equals("Existing shop") || !prefs.getString("message","").equals("Existing message"))throw new AssertionError("content changed");

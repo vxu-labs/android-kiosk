@@ -16,6 +16,9 @@ if (($smoke -join "`n") -notmatch 'PASS: 19 Android smoke checks') { throw 'Smok
 $locale = & $adb -s $Serial shell am instrument -w il.co.kiosk.tests/il.co.kiosk.LocaleTests
 $locale | Write-Output
 if (($locale -join "`n") -notmatch 'PASS: 18 language and footer checks') { throw 'Language and footer checks failed.' }
+$appearance = & $adb -s $Serial shell am instrument -w il.co.kiosk.tests/il.co.kiosk.AppearanceTests
+$appearance | Write-Output
+if (($appearance -join "`n") -notmatch 'PASS: 27 appearance and menu checks') { throw 'Appearance and menu checks failed.' }
 & $adb -s $Serial shell dpm set-device-owner il.co.kiosk/.KioskAdminReceiver
 if ($LASTEXITCODE -ne 0) { throw 'Test Device Owner provisioning failed' }
 # Production policy disables ADB. The instrumentation saves its result then restores test connectivity.
@@ -25,7 +28,7 @@ Start-Sleep -Seconds 3
 Start-Sleep -Seconds 2
 $owner = & $adb -s $Serial shell cat /sdcard/Android/data/il.co.kiosk/files/owner-tests.txt
 $owner | Write-Output
-if (($owner -join "`n") -notmatch 'PASS: 18 Device Owner checks') { throw 'Device Owner tests failed; inspect the emulator.' }
+if (($owner -join "`n") -notmatch 'PASS: 20 Device Owner checks') { throw 'Device Owner tests failed; inspect the emulator.' }
 New-Item -ItemType Directory -Force build/screenshots | Out-Null
 & $adb -s $Serial pull /sdcard/Android/data/il.co.kiosk/files/home.png build/screenshots/home.png
 & $adb -s $Serial pull /sdcard/Android/data/il.co.kiosk/files/settings.png build/screenshots/settings.png

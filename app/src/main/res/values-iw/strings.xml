@@ -17,8 +17,8 @@
     <string name="welcome">"ברוכים הבאים"</string>
     <string name="default_title">"הקיוסק שלי"</string>
     <string name="default_message">"שמחים לראות אותך כאן"</string>
-    <string name="admin_handle">"כניסת מנהל — לחיצה ממושכת של שתי שניות"</string>
-    <string name="admin_pin">"PIN מנהל"</string>
+    <string name="admin_handle">פתיחת פעולות מהירות</string>
+    <string name="admin_pin">"קוד מנהל"</string>
     <string name="pin_intro">"ההגדרות והיציאה מוגנות בקוד האישי שלך."</string>
     <string name="admin_login">"כניסת מנהל"</string>
     <string name="cancel">"ביטול"</string>
@@ -46,7 +46,7 @@
     <string name="save_failed">"השמירה נכשלה. נסה שוב."</string>
     <string name="preview_saved">"התצוגה נשמרה. נעילה מלאה דורשת Device Owner."</string>
     <string name="enable_title">"הפעלת נעילת קיוסק"</string>
-    <string name="enable_message">"הטאבלט ייפתח תמיד בקיוסק. Home, יישומים אחרונים, התראות ו־USB debugging ייחסמו. להגדרות: לחיצה של שתי שניות על ⋮ ו־PIN. ודא ששמרת את הקוד."</string>
+    <string name="enable_message">"הטאבלט ייפתח תמיד בקיוסק. Home, יישומים אחרונים, התראות ו־USB debugging ייחסמו. להגדרות: לחץ על ⋮, בחר בהגדרות הקיוסק והזן PIN. ודא ששמרת את הקוד."</string>
     <string name="enable">"הפעלה"</string>
     <string name="cannot_save">"לא ניתן לשמור"</string>
     <string name="save_enable">"שמירה והפעלת הקיוסק"</string>
@@ -56,7 +56,7 @@
     <string name="change_pin">"שינוי PIN"</string>
     <string name="setup_help">"הוראות הפעלה וניהול"</string>
     <string name="full_lock_title">"הפעלת נעילה מלאה"</string>
-    <string name="full_lock_help">"יש להתקין את ה־APK על מכשיר ללא חשבונות וללא ניהול ארגוני אחר. במחשב עם ADB:\n\nadb shell dpm set-device-owner il.co.kiosk/.KioskAdminReceiver\n\nלאחר מכן פתח מחדש את האפליקציה, הזן PIN ושמור את ההגדרות להפעלת הנעילה. USB debugging יכובה בזמן הנעילה.\n\nכפתור ⋮ בפינה: לחיצה ממושכת ו־PIN.\n\nפתיחת Android מיועדת לתחזוקה בנוכחותך. חזרה לקיוסק או אתחול נועלים שוב.\n\nאין קוד שחזור. איפוס דרך Recovery עלול למחוק את כל המידע. האפליקציה עולה לאחר הדלקה, ואינה מדליקה מכשיר כבוי."</string>
+    <string name="full_lock_help">"יש להתקין את ה־APK על מכשיר ללא חשבונות וללא ניהול ארגוני אחר. במחשב עם ADB:\n\nadb shell dpm set-device-owner il.co.kiosk/.KioskAdminReceiver\n\nלאחר מכן פתח מחדש את האפליקציה, הזן PIN ושמור את ההגדרות להפעלת הנעילה. USB debugging יכובה בזמן הנעילה.\n\nכפתור ⋮ בפינה: לחיצה, בחירה בהגדרות הקיוסק והזנת PIN.\n\nפתיחת Android מיועדת לתחזוקה בנוכחותך. חזרה לקיוסק או אתחול נועלים שוב.\n\nאין קוד שחזור. איפוס דרך Recovery עלול למחוק את כל המידע. האפליקציה עולה לאחר הדלקה, ואינה מדליקה מכשיר כבוי."</string>
     <string name="understood">"הבנתי"</string>
     <string name="android_settings">"פתיחת הגדרות Android לתחזוקה"</string>
     <string name="exit_android">"יציאה זמנית ל־Android"</string>
@@ -71,7 +71,7 @@
     <string name="remove">"ביטול ניהול"</string>
     <string name="management_removed">"ניהול המכשיר בוטל"</string>
     <string name="remove_failed">"ביטול הניהול נכשל: "</string>
-    <string name="about">"Kiosk 1.1.0 · ללא פרסומות או שירות מעקב"</string>
+    <string name="about">"Kiosk 1.2.0 · ללא פרסומות או שירות מעקב"</string>
     <string name="android_open_failed">"לא ניתן לפתוח את Android: "</string>
     <string name="current_pin">"PIN נוכחי"</string>
     <string name="new_pin_hint">"PIN חדש (6–12 ספרות)"</string>
@@ -92,4 +92,14 @@
     <string name="site_unavailable">"האתר אינו זמין כרגע"</string>
     <string name="retry_delay">" ניסיון נוסף בעוד 15 שניות."</string>
     <string name="retry">"ניסיון נוסף"</string>
+    <string name="refresh_home">ריענון עמוד הבית</string>
+    <string name="kiosk_settings">הגדרות הקיוסק</string>
+    <string name="quick_actions">פעולות מהירות</string>
+    <string name="preferences">העדפות</string>
+    <string name="appearance">מראה</string>
+    <string name="theme_dark">כהה</string>
+    <string name="theme_light">בהיר</string>
+    <string name="appearance_hint">המראה משתנה בשמירה. תוכן האתר שומר על העיצוב שלו.</string>
+    <string name="pin_placeholder">הזן 6 עד 12 ספרות</string>
+    <string name="secure_setup">אבטחת הקיוסק</string>
 </resources>
